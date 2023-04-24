@@ -12,7 +12,7 @@ security:
                 property: email
     firewalls:
         login:
-            pattern: ^/api/v1/auth
+            pattern: ^/api/v.{1,8}/auth
             stateless: true
             json_login:
                 check_path: api_auth
@@ -20,7 +20,7 @@ security:
                 failure_handler: lexik_jwt_authentication.handler.authentication_failure
                 
         register:
-            pattern: ^api/v1/register
+            pattern: ^api/v.{1,8}/register
             stateless: true
 
         api:
@@ -35,6 +35,7 @@ security:
         main:
             lazy: true
             provider: app_user_provider
+            stateless: true
 
             # activate different ways to authenticate
             # https://symfony.com/doc/current/security.html#the-firewall

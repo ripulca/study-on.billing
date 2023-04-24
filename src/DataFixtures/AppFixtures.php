@@ -27,7 +27,8 @@ class AppFixtures extends Fixture
                     $user,
                     'password'
                 )
-            );
+            )
+            ->setBalance(500.0);
 
         $user_admin = new User();
         $user_admin->setEmail('user_admin@studyon.com')
@@ -37,7 +38,8 @@ class AppFixtures extends Fixture
                     $user,
                     'password'
                 )
-            );
+            )
+            ->setBalance(1000.0);
         $manager->persist($user);
         $manager->persist($user_admin);
         $manager->flush();
