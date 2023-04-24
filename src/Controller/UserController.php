@@ -8,6 +8,7 @@ use JMS\Serializer\Serializer;
 use JMS\Serializer\SerializerBuilder;
 use Doctrine\Persistence\ObjectManager;
 use Doctrine\Persistence\ManagerRegistry;
+use Nelmio\ApiDocBundle\Annotation\Security;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -17,6 +18,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
+use OpenApi\Annotations as OA;
 
 #[Route('/api/v1')]
 class UserController extends AbstractController
@@ -38,12 +40,133 @@ class UserController extends AbstractController
         $this->jwtManager = $jwtManager;
     }
 
+    /**
+     * @OA\Post(
+     *     path="/api/v1/auth",
+     *     summary="Аутентификация пользователя и получение JWT-токена",
+     *     description="Аутентификация пользователя и получение JWT-токена"
+     * )
+     * @OA\RequestBody(
+     *     required=true,
+     *     @OA\JsonContent(
+     *        @OA\Property(
+     *          property="email",
+     *          type="string",
+     *          description="email пользователя",
+     *          example="user@study-on.ru",
+     *        ),
+     *        @OA\Property(
+     *          property="password",
+     *          type="string",
+     *          description="пароль пользователя",
+     *          example="password",
+     *        ),
+     *     )
+     *)
+     * @OA\Response(
+     *     response=200,
+     *     description="Аутентификация пользователя и получение JWT-токена",
+     *     @OA\JsonContent(
+     *        @OA\Property(
+     *          property="token",
+     *          type="string",
+     *        ),
+     *     )
+     * )
+     * @OA\Response(
+     *     response=401,
+     *     description="Ошибка аутентификации",
+     *     @OA\JsonContent(
+     *        @OA\Property(
+     *          property="code",
+     *          type="string",
+     *          example="401"
+     *        ),
+     *        @OA\Property(
+     *          property="message",
+     *          type="string",
+     *          example="Invalid credentials."
+     *        ),
+     *     )
+     * )
+     * @OA\Tag(name="User")
+     */
     #[Route('/auth', name: 'api_auth', methods: ['POST'])]
     public function auth(): JsonResponse
     {
         return $this->json([]);
     }
 
+    /**
+     * @OA\Post(
+     *     path="/api/v1/register",
+     *     summary="Регистрация пользователя и получение JWT-токена",
+     *     description="Регистрация пользователя и получение JWT-токена"
+     * )
+     * @OA\RequestBody(
+     *     required=true,
+     *     @OA\JsonContent(
+     *        @OA\Property(
+     *          property="email",
+     *          type="string",
+     *          description="email пользователя",
+     *          example="user@study-on.ru",
+     *        ),
+     *        @OA\Property(
+     *          property="password",
+     *          type="string",
+     *          description="пароль пользователя",
+     *          example="password",
+     *        ),
+     *     )
+     *  )
+     * )
+     * @OA\Response(
+     *     response=201,
+     *     description="Успешная регистрация",
+     *     @OA\JsonContent(
+     *        @OA\Property(
+     *          property="token",
+     *          type="string",
+     *        ),
+     *        @OA\Property(
+     *          property="roles",
+     *          type="array",
+     *          @OA\Items(
+     *              type="string",
+     *          ),
+     *        ),
+     *     ),
+     * )
+     * @OA\Response(
+     *     response=400,
+     *     description="Ошибка валидации",
+     *     @OA\JsonContent(
+     *        @OA\Property(
+     *          property="errors",
+     *          type="array",
+     *          @OA\Items(
+     *              @OA\Property(
+     *                  type="string",
+     *                  property="property"
+     *              )
+     *          )
+     *        )
+     *     )
+     * )
+     * @OA\Response(
+     *     response=409,
+     *     description="Email уже используется.",
+     *     @OA\JsonContent(
+     *        @OA\Property(
+     *          property="error",
+     *          type="string",
+     *          example="Email уже используется.",
+     *        ),
+     *     ),
+     * )
+     * @OA\Tag(name="User")
+     */
     #[Route('/register', name: 'api_register', methods: ['POST'])]
     public function register(Request $request): JsonResponse
     {
@@ -52,8 +175,8 @@ class UserController extends AbstractController
         if ($errors) {
             return new JsonResponse(['errors' => $errors], Response::HTTP_BAD_REQUEST);
         }
-        if($this->entityManager->getRepository(User::class)->findOneByEmail($DTO_user->email)) {
-            return new JsonResponse(['errors' => ['Email уже существует']], Response::HTTP_BAD_REQUEST);
+        if ($this->entityManager->getRepository(User::class)->findOneByEmail($DTO_user->email)) {
+            return new JsonResponse(['errors' => ['Email уже существует']], Response::HTTP_CONFLICT);
         }
         $user = User::getFromDTO($DTO_user);
         $user->setPassword(
@@ -63,16 +186,64 @@ class UserController extends AbstractController
 
         return new JsonResponse([
             'token' => $this->jwtManager->create($user),
-            'roles'=>$user->getRoles(),
+            'roles' => $user->getRoles(),
         ], Response::HTTP_CREATED);
     }
 
-    #[Route('/users/current', name: 'api_get_current_user', methods: ['POST'])]
+    /**
+     * @OA\Get(
+     *     path="/api/v1/users/current",
+     *     summary="Получение информации о текущем пользователе",
+     *     description="Получение информации о текущем пользователе"
+     * )
+     * @OA\Response(
+     *     response=200,
+     *     description="Получение информации о текущем пользователе",
+     *     @OA\JsonContent(
+     *        @OA\Property(
+     *          property="email",
+     *          type="string",
+     *        ),
+     *        @OA\Property(
+     *          property="roles",
+     *          type="array",
+     *          @OA\Items(
+     *              type="string"
+     *          )
+     *        ),
+     *        @OA\Property(
+     *          property="balance",
+     *          type="number",
+     *          format="float"
+     *        )
+     *     )
+     * )
+     * @OA\Response(
+     *     response=401,
+     *     description="Пользователь не авторизован",
+     *     @OA\JsonContent(
+     *        @OA\Property(
+     *          property="error",
+     *          type="string"
+     *        ),
+     *     )
+     * )
+     * @OA\Tag(name="User")
+     * @Security(name="Bearer")
+     */
+    #[Security(name: 'Bearer')]
+    #[Route('/users/current', name: 'api_get_current_user', methods: ['GET'])]
     public function getCurrentUser(): JsonResponse
     {
         $decodedJwtToken = $this->jwtManager->decode($this->tokenStorageInterface->getToken());
+        if (!$decodedJwtToken) {
+            return new JsonResponse(['error' => 'Пользователь не авторизован'], Response::HTTP_UNAUTHORIZED);
+        }
 
-        $user=$this->entityManager->getRepository(User::class)->findOneByEmail($decodedJwtToken['username']);
+        $user = $this->entityManager->getRepository(User::class)->findOneByEmail($decodedJwtToken['username']);
+        if (!$user) {
+            return new JsonResponse(['error' => 'Пользователь с таким email не найден'], Response::HTTP_UNAUTHORIZED);
+        }
 
         return new JsonResponse([
             'email' => $decodedJwtToken['username'],
