@@ -10,21 +10,21 @@ class UserDTO
     #[Serializer\Type('string')]
     #[Assert\Email(message: 'Email {{ value }} не является валидным.')]
     #[Assert\NotBlank(message: 'Email не может быть пуст.')]
-    private ?string $email = null;
+    private ?string $username = null;
 
     #[Serializer\Type('string')]
     #[Assert\Length(min: 6, minMessage: 'Пароль должен содержать минимум {{ limit }} символов.')]
     #[Assert\NotBlank(message: 'Пароль не может быть пуст.')]
     private ?string $password = null;
 
-    public function getEmail(): ?string
+    public function getUsername(): ?string
     {
-        return $this->email;
+        return $this->username;
     }
 
-    public function setEmail(string $email): self
+    public function setUsername(string $username): self
     {
-        $this->email = $email;
+        $this->username = $username;
 
         return $this;
     }

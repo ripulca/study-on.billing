@@ -50,10 +50,10 @@ class UserController extends AbstractController
      *     required=true,
      *     @OA\JsonContent(
      *        @OA\Property(
-     *          property="email",
+     *          property="username",
      *          type="string",
      *          description="email пользователя",
-     *          example="user@study-on.ru",
+     *          example="user@study_on.com",
      *        ),
      *        @OA\Property(
      *          property="password",
@@ -94,7 +94,7 @@ class UserController extends AbstractController
     #[Route('/auth', name: 'api_auth', methods: ['POST'])]
     public function auth(): JsonResponse
     {
-        return $this->json([]);
+        //return token
     }
 
     /**
@@ -107,7 +107,7 @@ class UserController extends AbstractController
      *     required=true,
      *     @OA\JsonContent(
      *        @OA\Property(
-     *          property="email",
+     *          property="username",
      *          type="string",
      *          description="email пользователя",
      *          example="user@study-on.ru",
@@ -156,12 +156,12 @@ class UserController extends AbstractController
      * )
      * @OA\Response(
      *     response=409,
-     *     description="Email уже используется.",
+     *     description="Email уже существует.",
      *     @OA\JsonContent(
      *        @OA\Property(
      *          property="error",
      *          type="string",
-     *          example="Email уже используется.",
+     *          example="Email уже существует.",
      *        ),
      *     ),
      * )
@@ -172,10 +172,10 @@ class UserController extends AbstractController
     {
         $DTO_user = $this->serializer->deserialize($request->getContent(), UserDTO::class, 'json');
         $errors = $this->validator->validate($DTO_user);
-        if ($errors) {
+        if (count($errors)>0) {
             return new JsonResponse(['errors' => $errors], Response::HTTP_BAD_REQUEST);
         }
-        if ($this->entityManager->getRepository(User::class)->findOneByEmail($DTO_user->email)) {
+        if ($this->entityManager->getRepository(User::class)->findOneByEmail($DTO_user->getUsername())) {
             return new JsonResponse(['errors' => ['Email уже существует']], Response::HTTP_CONFLICT);
         }
         $user = User::getFromDTO($DTO_user);
@@ -201,7 +201,7 @@ class UserController extends AbstractController
      *     description="Получение информации о текущем пользователе",
      *     @OA\JsonContent(
      *        @OA\Property(
-     *          property="email",
+     *          property="username",
      *          type="string",
      *        ),
      *        @OA\Property(
@@ -239,14 +239,13 @@ class UserController extends AbstractController
         if (!$decodedJwtToken) {
             return new JsonResponse(['error' => 'Пользователь не авторизован'], Response::HTTP_UNAUTHORIZED);
         }
-
-        $user = $this->entityManager->getRepository(User::class)->findOneByEmail($decodedJwtToken['username']);
+        $user = $this->entityManager->getRepository(User::class)->findOneByEmail($decodedJwtToken['email']);
         if (!$user) {
             return new JsonResponse(['error' => 'Пользователь с таким email не найден'], Response::HTTP_UNAUTHORIZED);
         }
 
         return new JsonResponse([
-            'email' => $decodedJwtToken['username'],
+            'username' => $decodedJwtToken['email'],
             'roles' => $user->getRoles(),
             'balance' => $user->getBalance(),
         ], Response::HTTP_OK);

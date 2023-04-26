@@ -35,7 +35,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $password = null;
 
     #[ORM\Column(type:"float", options:["default" => 0])]
-    private ?float $balance = null;
+    private ?float $balance = 0;
 
     public function getId(): ?int
     {
@@ -110,7 +110,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public static function getFromDTO(UserDTO $userDTO): User
     {
         return (new self())
-            ->setEmail($userDTO->getEmail())
+            ->setEmail($userDTO->getUsername())
             ->setPassword($userDTO->getPassword());
     }
 

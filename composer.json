@@ -77,6 +77,10 @@
     },
     "require-dev": {
         "doctrine/doctrine-fixtures-bundle": "^3.4",
+        "phpunit/phpunit": "^9.5",
+        "symfony/browser-kit": "6.2.*",
+        "symfony/css-selector": "6.2.*",
+        "symfony/dom-crawler": "6.2.*",
         "symfony/maker-bundle": "^1.48",
         "symfony/security-bundle": "6.2.*"
     }
