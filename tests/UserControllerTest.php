@@ -49,7 +49,7 @@ class UserControllerTest extends AbstractTest
             "username" => "example@example.com",
         ]);
         $this->assertResponseCode(Response::HTTP_BAD_REQUEST);
-        // Неверный email
+        // Неверный username
         $client->jsonRequest('POST', $this->authURL, [
             "username" => "example@example.com",
             "password" => $this->fixture_password
@@ -112,13 +112,13 @@ class UserControllerTest extends AbstractTest
             "password" => "12345"
         ]);
         $this->assertResponseCode(Response::HTTP_BAD_REQUEST);
-        // Неверный email
+        // Неверный username
         $client->jsonRequest('POST', $this->registerURL, [
             "username" => "@example.com",
             "password" => $password
         ]);
         $this->assertResponseCode(Response::HTTP_BAD_REQUEST);
-        // Такой email уже используют
+        // Такой username уже используют
         $client->jsonRequest('POST', $this->registerURL, [
             "username" => $this->fixture_email,
             "password" => $password
