@@ -172,8 +172,12 @@ class UserController extends AbstractController
     {
         $DTO_user = $this->serializer->deserialize($request->getContent(), UserDTO::class, 'json');
         $errors = $this->validator->validate($DTO_user);
-        if (count($errors)>0) {
-            return new JsonResponse(['errors' => $errors], Response::HTTP_BAD_REQUEST);
+        if (count($errors) > 0) {
+            $json_errors=[];
+            foreach($errors as $error){
+                $json_errors[$error->getPropertyPath()]=$error->getMessage();
+            }
+            return new JsonResponse(['errors' => $json_errors], Response::HTTP_BAD_REQUEST);
         }
         if ($this->entityManager->getRepository(User::class)->findOneByEmail($DTO_user->getUsername())) {
             return new JsonResponse(['errors' => ['Email уже существует']], Response::HTTP_CONFLICT);
@@ -236,12 +240,9 @@ class UserController extends AbstractController
     public function getCurrentUser(): JsonResponse
     {
         $decodedJwtToken = $this->jwtManager->decode($this->tokenStorageInterface->getToken());
-        if (!$decodedJwtToken) {
-            return new JsonResponse(['error' => 'Пользователь не авторизован'], Response::HTTP_UNAUTHORIZED);
-        }
-        $user = $this->entityManager->getRepository(User::class)->findOneByEmail($decodedJwtToken['email']);
+        $user = $this->getUser();
         if (!$user) {
-            return new JsonResponse(['error' => 'Пользователь с таким email не найден'], Response::HTTP_UNAUTHORIZED);
+            return new JsonResponse(['error' => 'Пользователь не найден'], Response::HTTP_UNAUTHORIZED);
         }
 
         return new JsonResponse([

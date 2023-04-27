@@ -10,18 +10,20 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 class UserControllerTest extends AbstractTest
 {
-    private string $authURL='/api/v1/auth';
-    private string $registerURL='/api/v1/register';
-    private string $getCurrentUserURL='/api/v1/users/current';
-    private string $fixture_email='user_admin@studyon.com';
-    private string $fixture_password='password';
-    private float $fixture_balance=1000;
+    private string $authURL = '/api/v1/auth';
+    private string $registerURL = '/api/v1/register';
+    private string $getCurrentUserURL = '/api/v1/users/current';
+    private string $fixture_email = 'user_admin@studyon.com';
+    private string $fixture_password = 'password';
+    private float $fixture_balance = 1000;
 
     protected function getFixtures(): array
     {
-        return [new AppFixtures(
-            $this->getContainer()->get(UserPasswordHasherInterface::class),
-        )];
+        return [
+            new AppFixtures(
+                $this->getContainer()->get(UserPasswordHasherInterface::class),
+            )
+        ];
     }
 
     public function testAuthSuccess()
@@ -61,13 +63,13 @@ class UserControllerTest extends AbstractTest
             "password" => "3456378465926"
         ]);
         $this->assertResponseCode(Response::HTTP_UNAUTHORIZED);
-        
+
     }
     public function testRegisterSuccess()
     {
         $client = static::getClient();
-        $email='example@example.com';
-        $password='password';
+        $email = 'example@example.com';
+        $password = 'password';
 
         $client->jsonRequest('POST', $this->registerURL, [
             "username" => $email,
@@ -78,7 +80,7 @@ class UserControllerTest extends AbstractTest
         $response = $client->getResponse();
         $responseData = json_decode($response->getContent(), true, 512, JSON_THROW_ON_ERROR);
         $this->assertTrue(isset($responseData['token']));
-        $this->assertSame(1, $this->getEntityManager()->getRepository(User::class)->count(['email'=>$email]));
+        $this->assertSame(1, $this->getEntityManager()->getRepository(User::class)->count(['email' => $email]));
 
         $client = static::getClient();
         $client->jsonRequest('POST', $this->authURL, [
@@ -93,8 +95,8 @@ class UserControllerTest extends AbstractTest
     public function testRegisterFailed()
     {
         $client = static::getClient();
-        $email='example@example.com';
-        $password='password';
+        $email = 'example@example.com';
+        $password = 'password';
 
         // Нет username
         $client->jsonRequest('POST', $this->registerURL, [
@@ -124,7 +126,7 @@ class UserControllerTest extends AbstractTest
             "password" => $password
         ]);
         $this->assertResponseCode(Response::HTTP_CONFLICT);
-        
+
     }
     public function testGetCurrentUserSuccess()
     {
@@ -136,9 +138,9 @@ class UserControllerTest extends AbstractTest
         $this->assertResponseCode(Response::HTTP_OK);
         $response = $client->getResponse();
         $responseData = json_decode($response->getContent(), true, 512, JSON_THROW_ON_ERROR);
-        $token=$responseData['token'];
+        $token = $responseData['token'];
         $this->assertTrue(isset($token));
-        $client->request('GET', $this->getCurrentUserURL, [], [], ['HTTP_AUTHORIZATION' => 'Bearer '. $token]);
+        $client->request('GET', $this->getCurrentUserURL, [], [], ['HTTP_AUTHORIZATION' => 'Bearer ' . $token]);
         $this->assertResponseCode(Response::HTTP_OK);
         $response = $client->getResponse();
         $responseData = json_decode($response->getContent(), true, 512, JSON_THROW_ON_ERROR);
@@ -156,7 +158,7 @@ class UserControllerTest extends AbstractTest
         $this->assertResponseCode(Response::HTTP_OK);
         $response = $client->getResponse();
         $responseData = json_decode($response->getContent(), true, 512, JSON_THROW_ON_ERROR);
-        $token=$responseData['token'];
+        $token = $responseData['token'];
         $this->assertTrue(isset($token));
         //без токена
         $client->request('GET', $this->getCurrentUserURL, [], [], []);

@@ -8,12 +8,12 @@ use Symfony\Component\Validator\Constraints as Assert;
 class UserDTO
 {
     #[Serializer\Type('string')]
-    #[Assert\Email(message: 'Email {{ value }} не является валидным.')]
+    #[Assert\Email(message: 'Email не является валидным.')]
     #[Assert\NotBlank(message: 'Email не может быть пуст.')]
     private ?string $username = null;
 
     #[Serializer\Type('string')]
-    #[Assert\Length(min: 6, minMessage: 'Пароль должен содержать минимум {{ limit }} символов.')]
+    #[Assert\Length(min: 6, minMessage: 'Пароль должен содержать минимум 6 символов.')]
     #[Assert\NotBlank(message: 'Пароль не может быть пуст.')]
     private ?string $password = null;
 
