@@ -110,7 +110,7 @@ class UserController extends AbstractController
      *          property="username",
      *          type="string",
      *          description="email пользователя",
-     *          example="user@study-on.ru",
+     *          example="user@study_on.com",
      *        ),
      *        @OA\Property(
      *          property="password",
@@ -175,7 +175,7 @@ class UserController extends AbstractController
         if (count($errors) > 0) {
             $json_errors=[];
             foreach($errors as $error){
-                $json_errors[$error->getPropertyPath()]=$error->getMessage();
+                $json_errors[]=$error->getMessage();
             }
             return new JsonResponse(['errors' => $json_errors], Response::HTTP_BAD_REQUEST);
         }
@@ -242,7 +242,7 @@ class UserController extends AbstractController
         $decodedJwtToken = $this->jwtManager->decode($this->tokenStorageInterface->getToken());
         $user = $this->getUser();
         if (!$user) {
-            return new JsonResponse(['error' => 'Пользователь не найден'], Response::HTTP_UNAUTHORIZED);
+            return new JsonResponse(['errors' => 'Пользователь не найден'], Response::HTTP_UNAUTHORIZED);
         }
 
         return new JsonResponse([

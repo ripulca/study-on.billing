@@ -25,7 +25,6 @@ class UserControllerTest extends AbstractTest
             )
         ];
     }
-
     public function testAuthSuccess()
     {
         $client = static::getClient();
@@ -36,9 +35,9 @@ class UserControllerTest extends AbstractTest
         $this->assertResponseCode(Response::HTTP_OK);
         $response = $client->getResponse();
         $responseData = json_decode($response->getContent(), true, 512, JSON_THROW_ON_ERROR);
-        $this->assertTrue(isset($responseData['token']));
+        $this->assertNotNull($responseData['token']);
     }
-    public function testAuthFailed()
+    public function testAuthWithEmptyUsername()
     {
         $client = static::getClient();
         // Нет username
@@ -46,26 +45,44 @@ class UserControllerTest extends AbstractTest
             "password" => "235346545"
         ]);
         $this->assertResponseCode(Response::HTTP_BAD_REQUEST);
+    }
+    public function testAuthWithEmptyPassword()
+    {
+        $client = static::getClient();
         // Нет password
         $client->jsonRequest('POST', $this->authURL, [
             "username" => "example@example.com",
         ]);
         $this->assertResponseCode(Response::HTTP_BAD_REQUEST);
+    }
+    public function testAuthIncorrectUsername()
+    {
+        $client = static::getClient();
         // Неверный username
         $client->jsonRequest('POST', $this->authURL, [
             "username" => "example@example.com",
             "password" => $this->fixture_password
         ]);
         $this->assertResponseCode(Response::HTTP_UNAUTHORIZED);
+        $response = $client->getResponse();
+        $responseData = json_decode($response->getContent(), true, 512, JSON_THROW_ON_ERROR);
+        $this->assertEquals("Invalid credentials.",$responseData['message']);
+    }
+    public function testAuthIncorrectPassword()
+    {
+        $client = static::getClient();
         // Неверный password
         $client->jsonRequest('POST', $this->authURL, [
             "username" => $this->fixture_email,
             "password" => "3456378465926"
         ]);
         $this->assertResponseCode(Response::HTTP_UNAUTHORIZED);
+        $response = $client->getResponse();
+        $responseData = json_decode($response->getContent(), true, 512, JSON_THROW_ON_ERROR);
+        $this->assertEquals("Invalid credentials.",$responseData['message']);
 
     }
-    public function testRegisterSuccess()
+    public function testRegisterSuccessWithAuthCheck()
     {
         $client = static::getClient();
         $email = 'example@example.com';
@@ -79,7 +96,7 @@ class UserControllerTest extends AbstractTest
 
         $response = $client->getResponse();
         $responseData = json_decode($response->getContent(), true, 512, JSON_THROW_ON_ERROR);
-        $this->assertTrue(isset($responseData['token']));
+        $this->assertNotNull($responseData['token']);
         $this->assertSame(1, $this->getEntityManager()->getRepository(User::class)->count(['email' => $email]));
 
         $client = static::getClient();
@@ -90,42 +107,76 @@ class UserControllerTest extends AbstractTest
         $this->assertResponseCode(Response::HTTP_OK);
         $response = $client->getResponse();
         $responseData = json_decode($response->getContent(), true, 512, JSON_THROW_ON_ERROR);
-        $this->assertTrue(isset($responseData['token']));
+        $this->assertNotNull($responseData['token']);
     }
-    public function testRegisterFailed()
+    public function testRegisterWithEmptyUsername()
     {
         $client = static::getClient();
-        $email = 'example@example.com';
         $password = 'password';
-
         // Нет username
         $client->jsonRequest('POST', $this->registerURL, [
             "password" => $password,
         ]);
         $this->assertResponseCode(Response::HTTP_BAD_REQUEST);
+        $response = $client->getResponse();
+        $responseData = json_decode($response->getContent(), true, 512, JSON_THROW_ON_ERROR);
+        $this->assertEquals("Email не может быть пуст.",$responseData['errors'][0]);
+    }
+    public function testRegisterWithEmptyPassword()
+    {
+        $client = static::getClient();
+        $email = 'example@example.com';
         // Нет password
         $client->jsonRequest('POST', $this->registerURL, [
             "username" => $email,
         ]);
         $this->assertResponseCode(Response::HTTP_BAD_REQUEST);
+        $response = $client->getResponse();
+        $responseData = json_decode($response->getContent(), true, 512, JSON_THROW_ON_ERROR);
+        $this->assertEquals("Пароль не может быть пуст.",$responseData['errors'][0]);
+    }
+    public function testRegisterWithInvalidPassword()
+    {
+        $client = static::getClient();
+        $email = 'example@example.com';
         // Пароль меньше 6 символов
         $client->jsonRequest('POST', $this->registerURL, [
             "username" => $email,
             "password" => "12345"
         ]);
         $this->assertResponseCode(Response::HTTP_BAD_REQUEST);
+        $response = $client->getResponse();
+        $responseData = json_decode($response->getContent(), true, 512, JSON_THROW_ON_ERROR);
+        $this->assertEquals("Пароль должен содержать минимум 6 символов.",$responseData['errors'][0]);
+    }
+    public function testRegisterWithInvalidUsername()
+    {
+        $client = static::getClient();
+        $password = 'password';
         // Неверный username
         $client->jsonRequest('POST', $this->registerURL, [
             "username" => "@example.com",
             "password" => $password
         ]);
         $this->assertResponseCode(Response::HTTP_BAD_REQUEST);
+        $response = $client->getResponse();
+        $responseData = json_decode($response->getContent(), true, 512, JSON_THROW_ON_ERROR);
+        $this->assertEquals("Email не является валидным.",$responseData['errors'][0]);
+    }
+    public function testRegisterWithBusyUsername()
+    {
+        $client = static::getClient();
+        $email = 'example@example.com';
+        $password = 'password';
         // Такой username уже используют
         $client->jsonRequest('POST', $this->registerURL, [
             "username" => $this->fixture_email,
             "password" => $password
         ]);
         $this->assertResponseCode(Response::HTTP_CONFLICT);
+        $response = $client->getResponse();
+        $responseData = json_decode($response->getContent(), true, 512, JSON_THROW_ON_ERROR);
+        $this->assertEquals("Email уже существует",$responseData['errors'][0]);
 
     }
     public function testGetCurrentUserSuccess()
@@ -139,7 +190,7 @@ class UserControllerTest extends AbstractTest
         $response = $client->getResponse();
         $responseData = json_decode($response->getContent(), true, 512, JSON_THROW_ON_ERROR);
         $token = $responseData['token'];
-        $this->assertTrue(isset($token));
+        $this->assertNotNull($responseData['token']);
         $client->request('GET', $this->getCurrentUserURL, [], [], ['HTTP_AUTHORIZATION' => 'Bearer ' . $token]);
         $this->assertResponseCode(Response::HTTP_OK);
         $response = $client->getResponse();
@@ -158,10 +209,12 @@ class UserControllerTest extends AbstractTest
         $this->assertResponseCode(Response::HTTP_OK);
         $response = $client->getResponse();
         $responseData = json_decode($response->getContent(), true, 512, JSON_THROW_ON_ERROR);
-        $token = $responseData['token'];
-        $this->assertTrue(isset($token));
+        $this->assertNotNull($responseData['token']);
         //без токена
         $client->request('GET', $this->getCurrentUserURL, [], [], []);
         $this->assertResponseCode(Response::HTTP_UNAUTHORIZED);
+        $response = $client->getResponse();
+        $responseData = json_decode($response->getContent(), true, 512, JSON_THROW_ON_ERROR);
+        $this->assertEquals("JWT Token not found",$responseData['message']);
     }
 }
