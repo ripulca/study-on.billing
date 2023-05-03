@@ -21,7 +21,7 @@ class AppFixtures extends Fixture
         // $manager->persist($product);
 
         $user = new User();
-        $user->setEmail('user@study_on.com')
+        $user->setEmail('user@studyon.com')
             ->setPassword(
                 $this->passwordHasher->hashPassword(
                     $user,
