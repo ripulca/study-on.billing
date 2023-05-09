@@ -11,6 +11,12 @@ security:
                 class: App\Entity\User
                 property: email
     firewalls:
+        api_token_refresh:
+            pattern: ^/api/v1/token/refresh
+            stateless: true
+            refresh_jwt:
+                check_path: api_refresh_token
+
         login:
             pattern: ^/api/v.{1,8}/auth
             stateless: true
