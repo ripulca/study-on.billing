@@ -105,6 +105,61 @@ class UserController extends AbstractController
 
     /**
      * @OA\Post(
+     *     path="/api/v1/token/refresh",
+     *     summary="Обновление токенов",
+     *     description="Обновление токенов"
+     * )
+     * @OA\RequestBody(
+     *     required=true,
+     *     @OA\JsonContent(
+     *        @OA\Property(
+     *          property="refresh_token",
+     *          type="string",
+     *          description="токен пользователя",
+     *          example="refresh_token",
+     *        ),
+     *     )
+     * )
+     * @OA\Response(
+     *     response=200,
+     *     description="Обновление токенов",
+     *     @OA\JsonContent(
+     *        @OA\Property(
+     *          property="token",
+     *          type="string",
+     *        ),
+     *        @OA\Property(
+     *          property="refresh_token",
+     *          type="string",
+     *        ),
+     *     )
+     * )
+     * @OA\Response(
+     *     response=401,
+     *     description="Ошибка аутентификации",
+     *     @OA\JsonContent(
+     *        @OA\Property(
+     *          property="code",
+     *          type="string",
+     *          example="401"
+     *        ),
+     *        @OA\Property(
+     *          property="message",
+     *          type="string",
+     *          example="Invalid credentials."
+     *        ),
+     *     )
+     * )
+     * @OA\Tag(name="User")
+     */
+    #[Route('/token/refresh', name: 'api_refresh_token', methods: ['POST'])]
+    public function refreshToken()
+    {
+
+    }
+
+    /**
+     * @OA\Post(
      *     path="/api/v1/register",
      *     summary="Регистрация пользователя и получение JWT-токена",
      *     description="Регистрация пользователя и получение JWT-токена"
@@ -260,63 +315,8 @@ class UserController extends AbstractController
 
         return new JsonResponse([
             'username' => $decodedJwtToken['email'],
-            'roles' => $user->getRoles(),
+            'roles' => $decodedJwtToken['roles'],
             'balance' => $user->getBalance(),
         ], Response::HTTP_OK);
-    }
-
-    /**
-     * @OA\Post(
-     *     path="/api/v1/token/refresh",
-     *     summary="Обновление токенов",
-     *     description="Обновление токенов"
-     * )
-     * @OA\RequestBody(
-     *     required=true,
-     *     @OA\JsonContent(
-     *        @OA\Property(
-     *          property="refresh_token",
-     *          type="string",
-     *          description="токен пользователя",
-     *          example="refresh_token",
-     *        ),
-     *     )
-     * )
-     * @OA\Response(
-     *     response=200,
-     *     description="Обновление токенов",
-     *     @OA\JsonContent(
-     *        @OA\Property(
-     *          property="token",
-     *          type="string",
-     *        ),
-     *        @OA\Property(
-     *          property="refresh_token",
-     *          type="string",
-     *        ),
-     *     )
-     * )
-     * @OA\Response(
-     *     response=401,
-     *     description="Ошибка аутентификации",
-     *     @OA\JsonContent(
-     *        @OA\Property(
-     *          property="code",
-     *          type="string",
-     *          example="401"
-     *        ),
-     *        @OA\Property(
-     *          property="message",
-     *          type="string",
-     *          example="Invalid credentials."
-     *        ),
-     *     )
-     * )
-     * @OA\Tag(name="User")
-     */
-    #[Route('/token/refresh', name: 'api_refresh_token', methods: ['POST'])]
-    public function refresh_token()
-    {
-
     }
 }
