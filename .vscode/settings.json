@@ -5,17 +5,17 @@
             "server": "172.19.0.2",
             "port": 5432,
             "driver": "PostgreSQL",
-            "name": "study_on_billing",
-            "database": "study_on_billing",
+            "name": "study_on_billing_test",
+            "database": "study_on_billing_test",
             "username": "pguser"
         },
         {
             "previewLimit": 50,
-            "server": "172.19.0.2",
+            "server": "172.20.0.2",
             "port": 5432,
             "driver": "PostgreSQL",
-            "name": "study_on_billing_test",
-            "database": "study_on_billing_test",
+            "name": "study_on_billing",
+            "database": "study_on_billing",
             "username": "pguser"
         }
     ]

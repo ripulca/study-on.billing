@@ -20,6 +20,7 @@ use Gesdinet\JWTRefreshTokenBundle\Model\RefreshTokenManagerInterface;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Gesdinet\JWTRefreshTokenBundle\Generator\RefreshTokenGeneratorInterface;
+use Lexik\Bundle\JWTAuthenticationBundle\Exception\JWTDecodeFailureException;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 
 #[Route('/api/v1')]
@@ -43,64 +44,30 @@ class UserController extends AbstractController
     }
 
     /**
+     * @Route("/api/v1/auth", name="login", methods={"POST"})
      * @OA\Post(
-     *     path="/api/v1/auth",
-     *     summary="Аутентификация пользователя и получение JWT-токена",
-     *     description="Аутентификация пользователя и получение JWT-токена"
-     * )
-     * @OA\RequestBody(
-     *     required=true,
-     *     @OA\JsonContent(
-     *        @OA\Property(
-     *          property="username",
-     *          type="string",
-     *          description="email пользователя",
-     *          example="user@study_on.com",
-     *        ),
-     *        @OA\Property(
-     *          property="password",
-     *          type="string",
-     *          description="пароль пользователя",
-     *          example="password",
-     *        ),
-     *     )
-     *)
-     * @OA\Response(
-     *     response=200,
-     *     description="Аутентификация пользователя и получение JWT-токена",
-     *     @OA\JsonContent(
-     *        @OA\Property(
-     *          property="token",
-     *          type="string",
-     *        ),
-     *        @OA\Property(
-     *          property="refresh_token",
-     *          type="string",
-     *        ),
+     *     description="Get JWT and new refresh token by credentials",
+     *     tags={"auth"},
+     *     @OA\RequestBody(
+     *          @Model(type=UserDto::class)
+     *     ),
+     *     @OA\Response(
+     *          response=200,
+     *          description="The JWT token",
+     *          @OA\JsonContent(
+     *              type="object",
+     *              @OA\Property(property="token", type="string"),
+     *              @OA\Property(property="refresh_token", type="string")
+     *          )
      *     )
      * )
-     * @OA\Response(
-     *     response=401,
-     *     description="Ошибка аутентификации",
-     *     @OA\JsonContent(
-     *        @OA\Property(
-     *          property="code",
-     *          type="string",
-     *          example="401"
-     *        ),
-     *        @OA\Property(
-     *          property="message",
-     *          type="string",
-     *          example="Invalid credentials."
-     *        ),
-     *     )
-     * )
-     * @OA\Tag(name="User")
+     * Managed by lexik/jwt-authentication-bundle. Used for only OA doc
+     * @throws \Exception
      */
     #[Route('/auth', name: 'api_auth', methods: ['POST'])]
     public function auth(): JsonResponse
     {
-        //return token
+        throw new \RuntimeException();
     }
 
     /**
@@ -109,128 +76,61 @@ class UserController extends AbstractController
      *     summary="Обновление токенов",
      *     description="Обновление токенов"
      * )
-     * @OA\RequestBody(
-     *     required=true,
-     *     @OA\JsonContent(
-     *        @OA\Property(
-     *          property="refresh_token",
-     *          type="string",
-     *          description="токен пользователя",
-     *          example="refresh_token",
-     *        ),
+     * @OA\Post(
+     *     description="Get new valid JWT token renewing valid datetime of presented refresh token",
+     *     tags={"auth"},
+     *     @OA\RequestBody(
+     *          @OA\JsonContent(
+     *              type="object",
+     *              @OA\Property(property="refresh_token", type="string")
+     *          )
+     *     ),
+     *     @OA\Response(
+     *          response=200,
+     *          description="The JWT token",
+     *          @OA\JsonContent(
+     *              type="object",
+     *              @OA\Property(property="token", type="string"),
+     *              @OA\Property(property="refresh_token", type="string")
+     *          )
      *     )
-     * )
-     * @OA\Response(
-     *     response=200,
-     *     description="Обновление токенов",
-     *     @OA\JsonContent(
-     *        @OA\Property(
-     *          property="token",
-     *          type="string",
-     *        ),
-     *        @OA\Property(
-     *          property="refresh_token",
-     *          type="string",
-     *        ),
-     *     )
-     * )
-     * @OA\Response(
-     *     response=401,
-     *     description="Ошибка аутентификации",
-     *     @OA\JsonContent(
-     *        @OA\Property(
-     *          property="code",
-     *          type="string",
-     *          example="401"
-     *        ),
-     *        @OA\Property(
-     *          property="message",
-     *          type="string",
-     *          example="Invalid credentials."
-     *        ),
-     *     )
-     * )
-     * @OA\Tag(name="User")
+     * )make
+     * Managed by gesdinet/jwt-refresh-token-bundle. Used for only OA doc
+     * @throws \Exception
      */
     #[Route('/token/refresh', name: 'api_refresh_token', methods: ['POST'])]
     public function refreshToken()
     {
-
+        throw new \RuntimeException();
     }
 
     /**
+     * @Route("/api/v1/register", name="app_register", methods={"POST"})
      * @OA\Post(
-     *     path="/api/v1/register",
-     *     summary="Регистрация пользователя и получение JWT-токена",
-     *     description="Регистрация пользователя и получение JWT-токена"
-     * )
-     * @OA\RequestBody(
-     *     required=true,
-     *     @OA\JsonContent(
-     *        @OA\Property(
-     *          property="username",
-     *          type="string",
-     *          description="email пользователя",
-     *          example="user@study_on.com",
-     *        ),
-     *        @OA\Property(
-     *          property="password",
-     *          type="string",
-     *          description="пароль пользователя",
-     *          example="password",
-     *        ),
-     *     )
-     *  )
-     * )
-     * @OA\Response(
-     *     response=201,
-     *     description="Успешная регистрация",
-     *     @OA\JsonContent(
-     *        @OA\Property(
-     *          property="token",
-     *          type="string",
-     *        ),
-     *        @OA\Property(
-     *          property="refresh_token",
-     *          type="string",
-     *        ),
-     *        @OA\Property(
-     *          property="roles",
-     *          type="array",
-     *          @OA\Items(
-     *              type="string",
-     *          ),
-     *        ),
+     *     description="Register new user. Get new JWT and new refresh token",
+     *     tags={"auth"},
+     *     @OA\RequestBody(
+     *          @Model(type=UserDto::class)
      *     ),
-     * )
-     * @OA\Response(
-     *     response=400,
-     *     description="Ошибка валидации",
-     *     @OA\JsonContent(
-     *        @OA\Property(
-     *          property="errors",
-     *          type="array",
-     *          @OA\Items(
-     *              @OA\Property(
-     *                  type="string",
-     *                  property="property"
-     *              )
+     *     @OA\Response(
+     *          response=200,
+     *          description="Returns the JWT token",
+     *          @OA\JsonContent(
+     *              type="object",
+     *              @OA\Property(property="token", type="string"),
+     *              @OA\Property(property="refresh_token", type="string")
      *          )
-     *        )
+     *     ),
+     *     @OA\Response(
+     *          response=409,
+     *          description="User already exists",
+     *          @OA\JsonContent(
+     *              schema="Error",
+     *              type="object",
+     *              @OA\Property(property="error", type="string")
+     *          )
      *     )
      * )
-     * @OA\Response(
-     *     response=409,
-     *     description="Email уже существует.",
-     *     @OA\JsonContent(
-     *        @OA\Property(
-     *          property="error",
-     *          type="string",
-     *          example="Email уже существует.",
-     *        ),
-     *     ),
-     * )
-     * @OA\Tag(name="User")
      */
     #[Route('/register', name: 'api_register', methods: ['POST'])]
     public function register(Request $request, RefreshTokenGeneratorInterface $refreshTokenGenerator, RefreshTokenManagerInterface $refreshTokenManager, ): JsonResponse
@@ -263,45 +163,28 @@ class UserController extends AbstractController
     }
 
     /**
+     * @Route("/api/v1/users/current", name="app_user", methods={"GET"})
      * @OA\Get(
-     *     path="/api/v1/users/current",
-     *     summary="Получение информации о текущем пользователе",
-     *     description="Получение информации о текущем пользователе"
-     * )
-     * @OA\Response(
-     *     response=200,
-     *     description="Получение информации о текущем пользователе",
-     *     @OA\JsonContent(
-     *        @OA\Property(
-     *          property="username",
-     *          type="string",
-     *        ),
-     *        @OA\Property(
-     *          property="roles",
-     *          type="array",
-     *          @OA\Items(
-     *              type="string"
+     *     description="Get user data by JWT",
+     *     tags={"user"},
+     *     @OA\Response(
+     *          response=200,
+     *          description="The user data",
+     *          @OA\JsonContent(
+     *              schema="CurrentUser",
+     *              type="object",
+     *              @OA\Property(property="username", type="string"),
+     *              @OA\Property(
+     *                  property="roles",
+     *                  type="array",
+     *                  @OA\Items(type="string")
+     *              ),
+     *              @OA\Property(property="balance", type="float")
      *          )
-     *        ),
-     *        @OA\Property(
-     *          property="balance",
-     *          type="number",
-     *          format="float"
-     *        )
      *     )
      * )
-     * @OA\Response(
-     *     response=401,
-     *     description="Пользователь не авторизован",
-     *     @OA\JsonContent(
-     *        @OA\Property(
-     *          property="error",
-     *          type="string"
-     *        ),
-     *     )
-     * )
-     * @OA\Tag(name="User")
      * @Security(name="Bearer")
+     * @throws JWTDecodeFailureException
      */
     #[Security(name: 'Bearer')]
     #[Route('/users/current', name: 'api_get_current_user', methods: ['GET'])]

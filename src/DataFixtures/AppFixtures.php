@@ -14,7 +14,10 @@ class AppFixtures extends Fixture
     private UserPasswordHasherInterface $passwordHasher;
     private RefreshTokenGeneratorInterface $refreshTokenGenerator;
     private RefreshTokenManagerInterface $refreshTokenManager;
-    public function __construct(UserPasswordHasherInterface $passwordHasher, RefreshTokenGeneratorInterface $refreshTokenGenerator, RefreshTokenManagerInterface $refreshTokenManager,)
+    public function __construct(UserPasswordHasherInterface $passwordHasher, 
+    RefreshTokenGeneratorInterface $refreshTokenGenerator, 
+    RefreshTokenManagerInterface $refreshTokenManager,
+    )
     {
         $this->passwordHasher = $passwordHasher;
         $this->refreshTokenGenerator = $refreshTokenGenerator;
@@ -36,8 +39,8 @@ class AppFixtures extends Fixture
             )
             ->setBalance(500.0);
         $manager->persist($user);
-        $refresh_token=$this->refreshTokenGenerator->createForUserWithTtl($user, (new \DateTime())->modify('+1 month')->getTimestamp());
-        $this->refreshTokenManager->save($refresh_token);
+        // $refresh_token=$this->refreshTokenGenerator->createForUserWithTtl($user, (new \DateTime())->modify('+1 month')->getTimestamp());
+        // $this->refreshTokenManager->save($refresh_token);
         
         $user_admin = new User();
         $user_admin->setEmail('user_admin@studyon.com')
@@ -49,8 +52,8 @@ class AppFixtures extends Fixture
                 )
             )
             ->setBalance(1000.0);
-        $refresh_token=$this->refreshTokenGenerator->createForUserWithTtl($user_admin, (new \DateTime())->modify('+1 month')->getTimestamp());
-        $this->refreshTokenManager->save($refresh_token);
+        // $refresh_token=$this->refreshTokenGenerator->createForUserWithTtl($user_admin, (new \DateTime())->modify('+1 month')->getTimestamp());
+        // $this->refreshTokenManager->save($refresh_token);
         $manager->persist($user_admin);
         $manager->flush();
     }
