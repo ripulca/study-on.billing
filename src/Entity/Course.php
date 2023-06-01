@@ -22,7 +22,7 @@ class Course
     #[ORM\Column(type: Types::SMALLINT)]
     private ?int $type = null;
 
-    #[ORM\Column]
+    #[ORM\Column(type:'float', nullable: true, options:['default'=>0.0])]
     private ?float $price = null;
 
     #[ORM\OneToMany(mappedBy: 'course', targetEntity: Transaction::class)]

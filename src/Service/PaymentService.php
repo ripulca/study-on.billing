@@ -35,7 +35,7 @@ class PaymentService
         });
     }
 
-    public function payment(User $user, Course $course)
+    public function payment(User $user, Course $course) : Transaction
     {
         if ($user->getBalance() < $course->getPrice()) {
             throw new \RuntimeException('На счету недостаточно средств', Response::HTTP_NOT_ACCEPTABLE);

@@ -20,11 +20,11 @@ class TransactionResponseDTO
     #[Serializer\Type("float")]
     public ?float $amount;
 
-    #[Serializer\Type("DateTimeImmutable")]
-    public ?DateTimeImmutable $created;
+    #[Serializer\Type("DateTime")]
+    public ?\DateTime $created;
 
-    #[Serializer\Type("DateTimeImmutable"), Serializer\SkipWhenEmpty]
-    public ?DateTimeImmutable $expires;
+    #[Serializer\Type("DateTime"), Serializer\SkipWhenEmpty]
+    public ?\DateTime $expires;
 
     public function __construct(Transaction $transaction)
     {

@@ -69,7 +69,7 @@ class TransactionRepository extends ServiceEntityRepository
             ->where('c.id = :courseId')
             ->setParameter('courseId', $course->getId())
 
-            ->innerJoin('t.userData', 'u')
+            ->innerJoin('t.customer', 'u')
             ->andWhere('u.id = :userId')
             ->setParameter('userId', $user->getId())
         ;

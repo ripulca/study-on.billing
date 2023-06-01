@@ -21,8 +21,8 @@ class CourseResponseDTO
     {
         if ($course) {
             $this->code = $course->getCode();
-            $this->type = $course->getType();
-            if($this->type!=CourseEnum::FREE){
+            $this->type = CourseEnum::NAMES[$course->getType()];
+            if($this->type!=CourseEnum::FREE_NAME){
                 $this->price = $course->getPrice();
             }
         }

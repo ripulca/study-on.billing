@@ -9,6 +9,7 @@ use OpenApi\Annotations as OA;
 use JMS\Serializer\SerializerBuilder;
 use Doctrine\Persistence\ObjectManager;
 use Doctrine\Persistence\ManagerRegistry;
+use Nelmio\ApiDocBundle\Annotation\Model;
 use Nelmio\ApiDocBundle\Annotation\Security;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -44,7 +45,7 @@ class UserController extends AbstractController
     }
 
     /**
-     * @Route("/api/v1/auth", name="login", methods={"POST"})
+     * @Route("/auth", name="api_auth", methods={"POST"})
      * @OA\Post(
      *     description="Get JWT and new refresh token by credentials",
      *     tags={"auth"},
@@ -71,11 +72,7 @@ class UserController extends AbstractController
     }
 
     /**
-     * @OA\Post(
-     *     path="/api/v1/token/refresh",
-     *     summary="Обновление токенов",
-     *     description="Обновление токенов"
-     * )
+     * @Route("/token/refresh", name="api_refresh_token", methods={"POST"})
      * @OA\Post(
      *     description="Get new valid JWT token renewing valid datetime of presented refresh token",
      *     tags={"auth"},
@@ -105,7 +102,7 @@ class UserController extends AbstractController
     }
 
     /**
-     * @Route("/api/v1/register", name="app_register", methods={"POST"})
+     * @Route("/register", name="api_register", methods={"POST"})
      * @OA\Post(
      *     description="Register new user. Get new JWT and new refresh token",
      *     tags={"auth"},
@@ -163,7 +160,7 @@ class UserController extends AbstractController
     }
 
     /**
-     * @Route("/api/v1/users/current", name="app_user", methods={"GET"})
+     * @Route("/users/current", name="api_get_current_user", methods={"GET"})
      * @OA\Get(
      *     description="Get user data by JWT",
      *     tags={"user"},
