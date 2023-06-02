@@ -12,7 +12,7 @@ class TransactionResponseDTO
     public ?int $id;
 
     #[Serializer\Type("string"), Serializer\SkipWhenEmpty]
-    public ?string $course_code;
+    public ?string $code;
 
     #[Serializer\Type("string")]
     public ?string $type;
@@ -29,7 +29,7 @@ class TransactionResponseDTO
     public function __construct(Transaction $transaction)
     {
         $this->id = $transaction->getId();
-        $this->course_code = $transaction->getCourse()?->getCode();
+        $this->code = $transaction->getCourse()?->getCode();
         $this->type = $transaction->getType();
         $this->amount = $transaction->getAmount();
         $this->created = $transaction->getCreated();

@@ -122,20 +122,17 @@ class CourseController extends AbstractController
      */
     #[Route('/{code}/pay', name: 'api_pay_for_courses', methods: ['POST'])]
     public function payForCourses(string $code, PaymentService $paymentService, CourseRepository $courseRepository){
-        $course=$courseRepository->findOneBy(['code' => $code]);
+        $course=$courseRepository->findOneBy(['code' => htmlspecialchars($code)]);
         if(!$course){
-            return new JsonResponse(['errors' =>"Курс $code не найден"], Response::HTTP_NOT_FOUND);
+            return new JsonResponse(['success'=>false,'errors' =>"Курс $code не найден"], Response::HTTP_NOT_FOUND);
         }
-        $response_body=[
-                'success'=>true,
-                'course_type'=>CourseEnum::NAMES[$course->getType()],
-        ];
         if($course->getType()===CourseEnum::FREE){
-            return new JsonResponse($response_body, Response::HTTP_OK);
+            $response= new PaymentResponseDTO(true, $course->getType(), null);
+            return new JsonResponse($response, Response::HTTP_OK);
         }
         $user = $this->getUser();
         if (!$user) {
-            return new JsonResponse(['errors' => 'Пользователь не авторизован'], Response::HTTP_UNAUTHORIZED);
+            return new JsonResponse(['success'=>false,'errors' => 'Пользователь не авторизован'], Response::HTTP_UNAUTHORIZED);
         }
         try{
             $transaction = $paymentService->payment($user, $course);
@@ -143,8 +140,11 @@ class CourseController extends AbstractController
             $response= new PaymentResponseDTO(true, $course->getType(), $expires);
             return new JsonResponse($response, Response::HTTP_OK);
         }
-        catch(\Exception $exeption){
-            return new JsonResponse(['errors'=>$exeption->getMessage()], Response::HTTP_NOT_ACCEPTABLE);
+        catch(\RuntimeException $exeption){
+            return new JsonResponse(['success'=>false,'errors'=>$exeption->getMessage()], Response::HTTP_NOT_ACCEPTABLE);
+        }
+        catch(\LogicException $exeption){
+            return new JsonResponse(['success'=>false,'errors'=>$exeption->getMessage()], Response::HTTP_CONFLICT);
         }
     }
 }

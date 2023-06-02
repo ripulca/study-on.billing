@@ -43,7 +43,7 @@ class PaymentService
 
         $transactionRepository = $this->entityManager->getRepository(Transaction::class);
         if ($transactionRepository->ifCoursePaid($course, $user) > 0) {
-            throw new \RuntimeException('Курс уже оплачен', Response::HTTP_NOT_ACCEPTABLE);
+            throw new \LogicException('Курс уже оплачен', Response::HTTP_NOT_ACCEPTABLE);
         }
 
         $transaction = new Transaction();

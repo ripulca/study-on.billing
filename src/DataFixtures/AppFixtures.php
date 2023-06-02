@@ -62,8 +62,10 @@ class AppFixtures extends Fixture
         $transaction = $this->paymentService->payment($user, $coursesByCode['php_1']);
         $transaction->setCreated((new \DateTime())->sub(new \DateInterval('P2D')));
         $transaction->setExpires((new \DateTime())->sub(new \DateInterval('P1D')));
+        $manager->persist($transaction);
 
         $transaction = $this->paymentService->payment($user, $coursesByCode['js_1']);
+        $manager->persist($transaction);
 
         $transaction = $this->paymentService->payment($user, $coursesByCode['php_1']);
         $transaction->setExpires((new \DateTime())->add(new \DateInterval('PT23H')));
@@ -103,6 +105,14 @@ class AppFixtures extends Fixture
             'code' => 'js_1',
             'type' => 2, // buy
             'price' => 30
+        ], [
+            'code' => 'test_buy',
+            'type' => 2, // buy
+            'price' => 40
+        ], [
+            'code' => 'test_rent',
+            'type' => 1, // rent
+            'price' => 10
         ],
     ];
 }

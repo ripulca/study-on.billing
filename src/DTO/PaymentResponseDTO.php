@@ -2,6 +2,7 @@
 
 namespace App\DTO;
 
+use DateTime;
 use App\Enum\CourseEnum;
 use JMS\Serializer\Annotation as Serializer;
 
@@ -11,15 +12,15 @@ class PaymentResponseDTO
     public string $success;
 
     #[Serializer\Type("string")]
-    public float $course_type;
+    public string $type;
 
-    #[Serializer\Type("DateTimeImmutable"), Serializer\SkipWhenEmpty]
-    public string $expires_at;
+    #[Serializer\Type("DateTime"), Serializer\SkipWhenEmpty]
+    public ?DateTime $expires;
 
     public function __construct($status, $type, $expires)
     {
         $this->success=$status;
-        $this->course_type=CourseEnum::NAMES[$type];
-        $this->expires_at=$expires;
+        $this->type=CourseEnum::NAMES[$type];
+        $this->expires=$expires;
     }
 }
