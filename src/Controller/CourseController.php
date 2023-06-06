@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\User;
+use App\Entity\Course;
 use App\Enum\CourseEnum;
 use App\DTO\CourseResponseDTO;
 use OpenApi\Annotations as OA;
@@ -13,10 +14,13 @@ use Doctrine\Persistence\ObjectManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Nelmio\ApiDocBundle\Annotation\Security;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
+use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 
 #[Route('/api/v1/courses')]
 class CourseController extends AbstractController
@@ -146,5 +150,18 @@ class CourseController extends AbstractController
         catch(\LogicException $exeption){
             return new JsonResponse(['success'=>false,'errors'=>$exeption->getMessage()], Response::HTTP_CONFLICT);
         }
+    }
+
+    #[Route('/new', name: 'api_new_course', methods: ['POST'])]
+    public function new(Request $request, JWTTokenManagerInterface $jwtManager, TokenStorageInterface $tokenStorageInterface, CourseRepository $courseRepository){
+        $token = $tokenStorageInterface->getToken();
+        if (null === $token) {
+            return new JsonResponse(['errors' => 'Нет токена'], Response::HTTP_UNAUTHORIZED);
+        }
+        $decodedJwtToken = $jwtManager->decode($token);
+        $type = $request->query->get('type') ? CourseEnum::NAMES[$request->query->get('type')] : null;
+        $code=$request->query->get('code')? :null;
+        $price =$request->query->get('price');
+        $course=new Course();
     }
 }
