@@ -5,12 +5,16 @@ namespace App\Controller;
 use App\Entity\User;
 use App\Entity\Course;
 use App\Enum\CourseEnum;
+use App\DTO\CourseRequestDTO;
 use App\DTO\CourseResponseDTO;
+use JMS\Serializer\Serializer;
 use OpenApi\Annotations as OA;
 use App\DTO\PaymentResponseDTO;
 use App\Service\PaymentService;
 use App\Repository\CourseRepository;
+use JMS\Serializer\SerializerBuilder;
 use Doctrine\Persistence\ObjectManager;
+use JMS\Serializer\SerializerInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Nelmio\ApiDocBundle\Annotation\Security;
@@ -26,9 +30,11 @@ use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInt
 class CourseController extends AbstractController
 {
     private ObjectManager $entityManager;
+    private Serializer $serializer;
 
     public function __construct(EntityManagerInterface $entityManager){
         $this->entityManager=$entityManager;
+        $this->serializer = SerializerBuilder::create()->build();
     }
 
     /**
@@ -55,6 +61,49 @@ class CourseController extends AbstractController
             $response[] = new CourseResponseDTO($course);
         }
         return new JsonResponse($response, Response::HTTP_OK);
+    }
+
+    /**
+     * @Route("/new", name="api_new_course", methods={"POST"})
+     * @OA\Post(
+     *     description="New course",
+     *     tags={"course"},
+     *     @OA\Response(
+     *          response=200,
+     *          description="Succeded pay info",
+     *          @OA\JsonContent(
+     *              schema="PayInfo",
+     *              type="object",
+     *              @OA\Property(property="success", type="boolean"),
+     *          )
+     *     ),
+     * )
+     * @Security(name="Bearer")
+     */
+    #[Route('/new', name: 'api_new_course', methods: ['POST'])]
+    public function new(Request $request, JWTTokenManagerInterface $jwtManager, TokenStorageInterface $tokenStorageInterface, CourseRepository $courseRepository){
+        $token = $tokenStorageInterface->getToken();
+        if (null === $token) {
+            return new JsonResponse(['errors' => 'Нет токена'], Response::HTTP_UNAUTHORIZED);
+        }
+        $decodedJwtToken = $jwtManager->decode($token);
+        $course = $this->serializer->deserialize($request->getContent(), CourseRequestDTO::class, 'json');
+        if($course->getName()==null){
+            return new JsonResponse(['errors'=>'Название не может быть пустым'], Response::HTTP_BAD_REQUEST);
+        }
+        if($course->getType()==CourseEnum::FREE){
+            $course->setPrice(null);
+        }
+        else{
+            if($course->getPrice()==null){
+                return new JsonResponse(['errors'=>'Курс платный, укажите цену'], Response::HTTP_FORBIDDEN);
+            }
+        }
+        if($courseRepository->count(['code'=>$course->getCode()])>0){
+            return new JsonResponse(['errors'=>'Курс с таким кодом уже существует'], Response::HTTP_CONFLICT);
+        }
+        $courseRepository->save(Course::fromDTO($course), true);
+        return new JsonResponse(['success'=>true], Response::HTTP_CREATED);
     }
 
     /**
@@ -87,6 +136,50 @@ class CourseController extends AbstractController
         }
         $course=new CourseResponseDTO($course);
         return new JsonResponse($course, Response::HTTP_OK);
+    }
+
+    /**
+     * @Route("/{code}/edit", name="api_edit_course", methods={"POST"})
+     * @OA\Post(
+     *     description="New course",
+     *     tags={"course"},
+     *     @OA\Response(
+     *          response=200,
+     *          description="Succeded pay info",
+     *          @OA\JsonContent(
+     *              schema="PayInfo",
+     *              type="object",
+     *              @OA\Property(property="success", type="boolean"),
+     *          )
+     *     ),
+     * )
+     * @Security(name="Bearer")
+     */
+    #[Route('/{code}/edit', name: 'api_edit_course', methods: ['POST'])]
+    public function edit(string $code, Request $request, JWTTokenManagerInterface $jwtManager, TokenStorageInterface $tokenStorageInterface, CourseRepository $courseRepository){
+        $token = $tokenStorageInterface->getToken();
+        if (null === $token) {
+            return new JsonResponse(['errors' => 'Нет токена'], Response::HTTP_UNAUTHORIZED);
+        }
+        $decodedJwtToken = $jwtManager->decode($token);
+        $course = $this->serializer->deserialize($request->getContent(), CourseRequestDTO::class, 'json');
+        if($course->getName()==null){
+            return new JsonResponse(['errors'=>'Название не может быть пустым'], Response::HTTP_BAD_REQUEST);
+        }
+        if($course->getType()==CourseEnum::FREE){
+            $course->setPrice(null);
+        }
+        else{
+            if($course->getPrice()==null){
+                return new JsonResponse(['errors'=>'Курс платный, укажите цену'], Response::HTTP_FORBIDDEN);
+            }
+        }
+        $edited_course=$courseRepository->findOneBy(['code'=>$code]);
+        if($edited_course==null){
+            return new JsonResponse(['errors'=>'Курс с таким кодом не существует'], Response::HTTP_CONFLICT);
+        }
+        $courseRepository->save($edited_course->fromDTOedit($course), true);
+        return new JsonResponse(['success'=>true], Response::HTTP_OK);
     }
 
     /**
@@ -150,18 +243,5 @@ class CourseController extends AbstractController
         catch(\LogicException $exeption){
             return new JsonResponse(['success'=>false,'errors'=>$exeption->getMessage()], Response::HTTP_CONFLICT);
         }
-    }
-
-    #[Route('/new', name: 'api_new_course', methods: ['POST'])]
-    public function new(Request $request, JWTTokenManagerInterface $jwtManager, TokenStorageInterface $tokenStorageInterface, CourseRepository $courseRepository){
-        $token = $tokenStorageInterface->getToken();
-        if (null === $token) {
-            return new JsonResponse(['errors' => 'Нет токена'], Response::HTTP_UNAUTHORIZED);
-        }
-        $decodedJwtToken = $jwtManager->decode($token);
-        $type = $request->query->get('type') ? CourseEnum::NAMES[$request->query->get('type')] : null;
-        $code=$request->query->get('code')? :null;
-        $price =$request->query->get('price');
-        $course=new Course();
     }
 }

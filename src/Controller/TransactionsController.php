@@ -81,9 +81,6 @@ class TransactionsController extends AbstractController
         $type = $request->query->get('type') ? TransactionEnum::TYPE_CODES[$request->query->get('type')] : null;
         $code=$request->query->get('code')? :null;
         $skip_expired =$request->query->get('skip_expired');
-        // if($this->getUser()->getUserIdentifier()!=$decodedJwtToken['email']){
-        //     return 
-        // }
         $course=$this->entityManager->getRepository(Course::class)->findOneBy(['code'=>$code]);
         $criteria=Criteria::create()->where(Criteria::expr()->eq('customer', $this->getUser()))->andWhere(Criteria::expr()->eq('type', $type));
         if($code){

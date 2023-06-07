@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Enum\CourseEnum;
 use App\Entity\Transaction;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\Persistence\ManagerRegistry;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 
@@ -82,6 +83,22 @@ class TransactionRepository extends ServiceEntityRepository
         return $query
             ->getQuery()
             ->getSingleScalarResult();
+    }
+
+    public function periodReport(\DateTime $from, \DateTime $to)
+    {
+        return $this->createQueryBuilder('t')
+            ->select(
+                'u.email', 'c.name', 'c.type', 'COUNT(t.id) AS transactions_count', 'SUM(t.amount) AS common_price'
+            )
+            ->innerJoin('t.course', 'c')
+            ->innerJoin('t.customer', 'u')
+            ->where('t.created >= :from and t.created <= :to')
+            ->setParameter('from', $from)
+            ->setParameter('to', $to)
+            ->groupBy('u.email', 'c.id', 'c.name', 'c.type')
+            ->getQuery()
+            ->getArrayResult();
     }
 //    /**
 //     * @return Transaction[] Returns an array of Transaction objects

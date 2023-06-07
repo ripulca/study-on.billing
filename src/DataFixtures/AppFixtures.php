@@ -82,6 +82,7 @@ class AppFixtures extends Fixture
         foreach (self::COURSES_DATA as $courseData) {
             $course = (new Course())
                 ->setCode($courseData['code'])
+                ->setName($courseData['name'])
                 ->setType($courseData['type']);
             if (isset($courseData['price'])) {
                 $course->setPrice($courseData['price']);
@@ -96,21 +97,26 @@ class AppFixtures extends Fixture
     private const COURSES_DATA = [
         [
             'code' => 'figma_1',
+            'name' => 'Веб-дизайн в Figma 2023. Основы UI/UX дизайна на практике.',
             'type' => 0 // free
         ], [
             'code' => 'php_1',
+            'name' => 'PHP для начинающих',
             'type' => 1, // rent
             'price' => 20
         ], [
             'code' => 'js_1',
+            'name' => 'Frontend разработчик на HTML, CSS и JavaScript',
             'type' => 2, // buy
             'price' => 30
         ], [
             'code' => 'test_buy',
+            'name' => 'test_buy',
             'type' => 2, // buy
             'price' => 40
         ], [
             'code' => 'test_rent',
+            'name' => 'test_rent',
             'type' => 1, // rent
             'price' => 10
         ],

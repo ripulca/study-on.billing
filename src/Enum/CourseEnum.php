@@ -23,4 +23,9 @@ class CourseEnum
         self::RENT_NAME => self::RENT,
         self::BUY_NAME => self::BUY,
     ];
+    public const COURSE_TYPE_NAMES = [
+        CourseEnum::FREE => 'Бесплатный',
+        CourseEnum::RENT => 'Аренда',
+        CourseEnum::BUY => 'Покупка',
+    ];
 }
