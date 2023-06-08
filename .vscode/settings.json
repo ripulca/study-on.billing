@@ -2,7 +2,7 @@
     "sqltools.connections": [
         {
             "previewLimit": 50,
-            "server": "172.19.0.2",
+            "server": "172.19.0.4",
             "port": 5432,
             "driver": "PostgreSQL",
             "name": "study_on_billing_test",
@@ -11,7 +11,7 @@
         },
         {
             "previewLimit": 50,
-            "server": "172.19.0.2",
+            "server": "172.19.0.4",
             "port": 5432,
             "driver": "PostgreSQL",
             "name": "study_on_billing",

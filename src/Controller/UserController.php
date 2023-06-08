@@ -187,6 +187,9 @@ class UserController extends AbstractController
     #[Route('/users/current', name: 'api_get_current_user', methods: ['GET'])]
     public function getCurrentUser(): JsonResponse
     {
+        if (!$this->tokenStorageInterface->getToken()) {
+            return new JsonResponse(['errors' => 'Пользователь не найден'], Response::HTTP_UNAUTHORIZED);
+        }
         $decodedJwtToken = $this->jwtManager->decode($this->tokenStorageInterface->getToken());
         $user = $this->getUser();
         if (!$user) {

@@ -4,9 +4,12 @@ namespace App\Tests;
 
 use App\Entity\User;
 use App\Tests\AbstractTest;
+use App\Service\PaymentService;
 use App\DataFixtures\AppFixtures;
 use Symfony\Component\HttpFoundation\Response;
+use Gesdinet\JWTRefreshTokenBundle\Model\RefreshTokenManagerInterface;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use Gesdinet\JWTRefreshTokenBundle\Generator\RefreshTokenGeneratorInterface;
 
 class UserControllerTest extends AbstractTest
 {
@@ -22,6 +25,9 @@ class UserControllerTest extends AbstractTest
         return [
             new AppFixtures(
                 $this->getContainer()->get(UserPasswordHasherInterface::class),
+                $this->getContainer()->get(RefreshTokenGeneratorInterface::class),
+                $this->getContainer()->get(RefreshTokenManagerInterface::class),
+                $this->getContainer()->get(PaymentService::class),
             )
         ];
     }
@@ -215,6 +221,6 @@ class UserControllerTest extends AbstractTest
         $this->assertResponseCode(Response::HTTP_UNAUTHORIZED);
         $response = $client->getResponse();
         $responseData = json_decode($response->getContent(), true, 512, JSON_THROW_ON_ERROR);
-        $this->assertEquals("JWT Token not found",$responseData['message']);
+        $this->assertEquals("Пользователь не найден",$responseData['errors']);
     }
 }

@@ -17,12 +17,12 @@ class AppFixtures extends Fixture
     private RefreshTokenGeneratorInterface $refreshTokenGenerator;
     private RefreshTokenManagerInterface $refreshTokenManager;
     private PaymentService $paymentService;
-    public function __construct(UserPasswordHasherInterface $passwordHasher, 
-    RefreshTokenGeneratorInterface $refreshTokenGenerator, 
-    RefreshTokenManagerInterface $refreshTokenManager,
-    PaymentService $paymentService
-    )
-    {
+    public function __construct(
+        UserPasswordHasherInterface $passwordHasher,
+        RefreshTokenGeneratorInterface $refreshTokenGenerator,
+        RefreshTokenManagerInterface $refreshTokenManager,
+        PaymentService $paymentService
+    ) {
         $this->passwordHasher = $passwordHasher;
         $this->refreshTokenGenerator = $refreshTokenGenerator;
         $this->refreshTokenManager = $refreshTokenManager;
@@ -42,7 +42,18 @@ class AppFixtures extends Fixture
             )
             ->setBalance(500.0);
         $manager->persist($user);
-        
+
+        $user_no_money = new User();
+        $user_no_money->setEmail('user_no_money@studyon.com')
+            ->setPassword(
+                $this->passwordHasher->hashPassword(
+                    $user,
+                    'password'
+                )
+            )
+            ->setBalance(0.0);
+        $manager->persist($user_no_money);
+
         $user_admin = new User();
         $user_admin->setEmail('user_admin@studyon.com')
             ->setRoles(['ROLE_SUPER_ADMIN'])
@@ -99,25 +110,33 @@ class AppFixtures extends Fixture
             'code' => 'figma_1',
             'name' => 'Веб-дизайн в Figma 2023. Основы UI/UX дизайна на практике.',
             'type' => 0 // free
-        ], [
+        ],
+        [
             'code' => 'php_1',
             'name' => 'PHP для начинающих',
-            'type' => 1, // rent
+            'type' => 1,
+            // rent
             'price' => 20
-        ], [
+        ],
+        [
             'code' => 'js_1',
             'name' => 'Frontend разработчик на HTML, CSS и JavaScript',
-            'type' => 2, // buy
+            'type' => 2,
+            // buy
             'price' => 30
-        ], [
+        ],
+        [
             'code' => 'test_buy',
             'name' => 'test_buy',
-            'type' => 2, // buy
+            'type' => 2,
+            // buy
             'price' => 40
-        ], [
+        ],
+        [
             'code' => 'test_rent',
             'name' => 'test_rent',
-            'type' => 1, // rent
+            'type' => 1,
+            // rent
             'price' => 10
         ],
     ];

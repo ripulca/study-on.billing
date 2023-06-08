@@ -82,7 +82,10 @@ class TransactionsController extends AbstractController
         $code=$request->query->get('code')? :null;
         $skip_expired =$request->query->get('skip_expired');
         $course=$this->entityManager->getRepository(Course::class)->findOneBy(['code'=>$code]);
-        $criteria=Criteria::create()->where(Criteria::expr()->eq('customer', $this->getUser()))->andWhere(Criteria::expr()->eq('type', $type));
+        $criteria=Criteria::create()->where(Criteria::expr()->eq('customer', $this->getUser()));
+        if($type){
+            $criteria->andWhere(Criteria::expr()->eq('type', $type));
+        }
         if($code){
             $criteria->andWhere(Criteria::expr()->eq('course', $course));
         }
