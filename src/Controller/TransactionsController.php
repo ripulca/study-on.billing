@@ -2,21 +2,18 @@
 
 namespace App\Controller;
 
-use App\Entity\Course;
 use App\Entity\Transaction;
 use App\Enum\TransactionEnum;
 use OpenApi\Annotations as OA;
 use App\DTO\TransactionResponseDTO;
 use Doctrine\Persistence\ObjectManager;
 use Doctrine\ORM\EntityManagerInterface;
-use App\Repository\TransactionRepository;
-use Doctrine\Common\Collections\Criteria;
-use Nelmio\ApiDocBundle\Annotation\Model;
 use Nelmio\ApiDocBundle\Annotation\Security;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Lexik\Bundle\JWTAuthenticationBundle\Exception\JWTDecodeFailureException;
@@ -27,8 +24,9 @@ class TransactionsController extends AbstractController
 {
     private ObjectManager $entityManager;
 
-    public function __construct(EntityManagerInterface $entityManager){
-        $this->entityManager=$entityManager;
+    public function __construct(EntityManagerInterface $entityManager)
+    {
+        $this->entityManager = $entityManager;
     }
 
     /**
@@ -65,37 +63,37 @@ class TransactionsController extends AbstractController
      *              type="array",
      *              @OA\Items(ref=@Model(type=TransactionResponseDTO::class, groups={"info"}))
      *          )
+     *     ),
+     *     @OA\Response(
+     *          response=401,
+     *          description="UNAUTHORIZED",
+     *          @OA\JsonContent(
+     *              schema="TransactionsInfo",
+     *              type="array",
+     *              @OA\Items(ref=@Model(type=TransactionResponseDTO::class, groups={"info"}))
+     *          )
      *     )
      * )
      * @Security(name="Bearer")
-     * @throws JWTDecodeFailureException
      */
+    #[Security(name: 'Bearer')]
     #[Route('/', name: 'api_get_transactions', methods: ['GET'])]
+    #[IsGranted('ROLE_USER')]
     public function transactions(Request $request, JWTTokenManagerInterface $jwtManager, TokenStorageInterface $tokenStorageInterface): JsonResponse
     {
-        $token = $tokenStorageInterface->getToken();
-        if (null === $token) {
+        if (!$tokenStorageInterface->getToken()) {
             return new JsonResponse(['errors' => 'Нет токена'], Response::HTTP_UNAUTHORIZED);
         }
-        $decodedJwtToken = $jwtManager->decode($token);
+        if (!$this->getUser()) {
+            return new JsonResponse(['errors' => 'Пользователь не авторизован'], Response::HTTP_UNAUTHORIZED);
+        }
         $type = $request->query->get('type') ? TransactionEnum::TYPE_CODES[$request->query->get('type')] : null;
-        $code=$request->query->get('code')? :null;
-        $skip_expired =$request->query->get('skip_expired');
-        $course=$this->entityManager->getRepository(Course::class)->findOneBy(['code'=>$code]);
-        $criteria=Criteria::create()->where(Criteria::expr()->eq('customer', $this->getUser()));
-        if($type){
-            $criteria->andWhere(Criteria::expr()->eq('type', $type));
-        }
-        if($code){
-            $criteria->andWhere(Criteria::expr()->eq('course', $course));
-        }
-        if($skip_expired){
-            $criteria->andWhere(Criteria::expr()->orX(Criteria::expr()->gte('expires',new \DateTime()), Criteria::expr()->isNull('expires')));
-        }
-        $transactions=$this->entityManager->getRepository(Transaction::class)->matching($criteria);
-        $response=[];
+        $code = $request->query->get('code') ?: null;
+        $skip_expired = $request->query->get('skip_expired');
+        $transactions = $this->entityManager->getRepository(Transaction::class)->findByFilters($this->getUser(), $type, $code, $skip_expired);
+        $response = [];
         foreach ($transactions as $transaction) {
-            $response[] = new TransactionResponseDTO($transaction);
+            $response[] = TransactionResponseDTO::fromTransaction($transaction);
         }
         return new JsonResponse($response, Response::HTTP_OK);
     }

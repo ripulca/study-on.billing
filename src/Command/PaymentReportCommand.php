@@ -37,7 +37,15 @@ class PaymentReportCommand extends Command
         $monthStart = \DateTime::createFromFormat($format, date('Y-m-01 00:00:00'));
         $monthEnd   = \DateTime::createFromFormat($format, date('Y-m-t 23:59:59'));
         $courses = $this->transactionRepository->periodReport($monthStart, $monthEnd);
-        $coursesByEmail = ArrayService::arrayByKeyWithTypeMap($courses, 'email');
+        $coursesByEmail = [];
+        foreach ($courses as $el) {
+            $el['type'] = CourseEnum::COURSE_TYPE_NAMES[$el['type']];
+            if (isset($coursesByEmail[$el['email']])) {
+                $coursesByEmail[$el['email']][] = $el;
+            } else {
+                $coursesByEmail[$el['email']] = [$el];
+            }
+        }
 
         foreach ($coursesByEmail as $email => $userCourses) {
             $totalPaid = 0.0;

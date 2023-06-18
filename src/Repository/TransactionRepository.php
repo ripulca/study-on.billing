@@ -41,22 +41,22 @@ class TransactionRepository extends ServiceEntityRepository
         }
     }
 
-    public function findByFilter($user, $filter){
+    public function findByFilters($user, $type, $code, $skip_expired){
         $query = $this->createQueryBuilder('t')
             ->leftJoin('t.course', 'c')
             ->andWhere('t.customer = :user')
-            ->setParameter('user', $user->getId())
+            ->setParameter('user', $user)
             ->orderBy('t.created');
 
-        if ($filter['type']!=null) {
-            $query->andWhere('t.type = :type')->setParameter('type', $filter['type']);
+        if ($type!=null) {
+            $query->andWhere('t.type = :type')->setParameter('type', $type);
         }
 
-        if ($filter['course_code']!=null) {
-            $query->andWhere('c.code = :code')->setParameter('code', $filter['course_code']);
+        if ($code!=null) {
+            $query->andWhere('c.code = :code')->setParameter('code', $code);
         }
 
-        if ($filter['skip_expired']!=null) {
+        if ($skip_expired!=null) {
             $query->andWhere('t.expires IS NULL or t.expires >= :today')
                 ->setParameter('today', new \DateTime());
         }

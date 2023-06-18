@@ -33,7 +33,7 @@ class RentEndingNotifCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $courses = $this->courseRepository->findExpired('P1D');
-        $coursesByEmail = ArrayService::arrayByKey($courses, 'email');
+        $coursesByEmail = ArrayService::mapToKey($courses, 'email');
 
         foreach ($coursesByEmail as $email => $userCourses) {
             $html = $this->twig->render(
