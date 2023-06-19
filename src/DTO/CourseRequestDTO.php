@@ -20,8 +20,17 @@ class CourseRequestDTO
     #[Serializer\Type("int")]
     public int $type;
 
+    public static function getCourseRequestDTO($name, $code, $price, $type){
+        return (new self)
+            ->setCode($code)
+            ->setName($name)
+            ->setPrice($price)
+            ->setType($type);
+    }
+
     public function setName($name){
         $this->name=$name;
+        return $this;
     }
 
     public function getName(){
@@ -30,6 +39,7 @@ class CourseRequestDTO
 
     public function setCode($code){
         $this->code=$code;
+        return $this;
     }
 
     public function getCode(){
@@ -38,6 +48,7 @@ class CourseRequestDTO
 
     public function setType($type){
         $this->type=$type;
+        return $this;
     }
 
     public function getType(){
@@ -46,6 +57,7 @@ class CourseRequestDTO
 
     public function setPrice($price){
         $this->price=$price;
+        return $this;
     }
 
     public function getPrice(){

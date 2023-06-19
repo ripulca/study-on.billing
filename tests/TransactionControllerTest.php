@@ -15,67 +15,74 @@ class TransactionControllerTest extends AbstractTest
     private float $fixture_balance = 1000;
     public function testGetTransactions(): void
     {
-        $client = $this->getClient(false, [], [
-            'HTTP_ACCEPT' => 'application/json'
-        ]);
+        $client = static::getClient();
 
-        $client->request('GET', '/api/v1/transactions');
-        $this->assertResponseRedirect();
-
-        $client->jsonRequest('POST', $this->authURL, [
-            "username" => $this->fixture_email,
-            "password" => $this->fixture_password
-        ]);
-        $userInfo = json_decode($client->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR);
-
-        $client->request('GET', '/api/v1/transactions', [
+        $client->jsonRequest('GET', '/api/v1/transactions/', [
             'type' => null,
             'code' => null,
             'skip_expired' => true
         ]);
         $client->getResponse()->getContent();
-        $client->followRedirect();
         $transactionsInfo = json_decode($client->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR);
-        $this->assertCount(1, $transactionsInfo);
+        $this->assertCount(2, $transactionsInfo);
+    }
+    public function testGetTransactionsTypeDepositSkipExp(): void
+    {
+        $client = static::getClient();
 
-        $client->request('GET', '/api/v1/transactions', [
+        $client->jsonRequest('GET', '/api/v1/transactions/', [
             'type' => 'deposit',
             'code' => null,
             'skip_expired' => true
         ]);
         $client->getResponse()->getContent();
-        $client->followRedirect();
         $transactionsInfo = json_decode($client->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR);
-        $this->assertCount(1, $transactionsInfo);
+        $this->assertCount(2, $transactionsInfo);
+    }
+    public function testGetTransactionsTypePaymentSkipExp(): void
+    {
+        $client = static::getClient();
 
-        $client->request('GET', '/api/v1/transactions', [
+        $client->jsonRequest('GET', '/api/v1/transactions/', [
             'type' => 'payment',
             'code' => null,
             'skip_expired' => true
         ]);
         $client->getResponse()->getContent();
-        $client->followRedirect();
         $transactionsInfo = json_decode($client->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR);
-        $this->assertCount(1, $transactionsInfo);
+        $this->assertCount(2, $transactionsInfo);
+    }
+    public function testGetTransactionsTypeDeposit(): void
+    {
+        $client = static::getClient();
 
-        $client->request('GET', '/api/v1/transactions', [
+        $client->jsonRequest('GET', '/api/v1/transactions/', [
             'type' => 'deposit',
             'code' => null,
             'skip_expired' => false
         ]);
         $client->getResponse()->getContent();
-        $client->followRedirect();
         $transactionsInfo = json_decode($client->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR);
-        $this->assertCount(1, $transactionsInfo);
+        $this->assertCount(2, $transactionsInfo);
+    }
+    public function testGetTransactionsTypePayment(): void
+    {
+        $client = static::getClient();
 
-        $client->request('GET', '/api/v1/transactions', [
+        $client->jsonRequest('GET', '/api/v1/transactions/', [
             'type' => 'payment',
             'code' => null,
             'skip_expired' => false
         ]);
         $client->getResponse()->getContent();
-        $client->followRedirect();
         $transactionsInfo = json_decode($client->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR);
-        $this->assertCount(1, $transactionsInfo);
+        $this->assertCount(2, $transactionsInfo);
+    }
+    public function testGetTransactionsUnauthorized(): void
+    {
+        $client = static::getClient();
+
+        $client->jsonRequest('GET', '/api/v1/transactions/');
+        $this->assertResponseCode(Response::HTTP_UNAUTHORIZED);
     }
 }
