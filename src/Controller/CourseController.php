@@ -11,6 +11,7 @@ use JMS\Serializer\Serializer;
 use OpenApi\Annotations as OA;
 use App\DTO\PaymentResponseDTO;
 use App\Service\PaymentService;
+use App\Exception\NoMoneyExceptions;
 use App\Repository\CourseRepository;
 use JMS\Serializer\SerializerBuilder;
 use Doctrine\Persistence\ObjectManager;
@@ -329,7 +330,7 @@ class CourseController extends AbstractController
             $expires = $transaction->getExpires() ?: null;
             $response = PaymentResponseDTO::getPaymentResponseDTO(true, $course->getType(), $expires);
             return new JsonResponse($response, Response::HTTP_OK);
-        } catch (\RuntimeException $exeption) {
+        } catch (NoMoneyExceptions $exeption) {
             return new JsonResponse(['success' => false, 'errors' => $exeption->getMessage()], Response::HTTP_NOT_ACCEPTABLE);
         } catch (\LogicException $exeption) {
             return new JsonResponse(['success' => false, 'errors' => $exeption->getMessage()], Response::HTTP_CONFLICT);

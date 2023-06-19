@@ -7,6 +7,7 @@ use App\Entity\Course;
 use App\Enum\CourseEnum;
 use App\Entity\Transaction;
 use App\Enum\TransactionEnum;
+use App\Exception\NoMoneyExceptions;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -38,7 +39,7 @@ class PaymentService
     public function payment(User $user, Course $course) : Transaction
     {
         if ($user->getBalance() < $course->getPrice()) {
-            throw new \RuntimeException('На счету недостаточно средств', Response::HTTP_NOT_ACCEPTABLE);
+            throw new NoMoneyExceptions('На счету недостаточно средств', Response::HTTP_NOT_ACCEPTABLE);
         }
 
         $transactionRepository = $this->entityManager->getRepository(Transaction::class);
