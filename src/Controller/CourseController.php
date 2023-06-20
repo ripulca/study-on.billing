@@ -2,7 +2,6 @@
 
 namespace App\Controller;
 
-use App\Entity\User;
 use App\Entity\Course;
 use App\Enum\CourseEnum;
 use App\DTO\CourseRequestDTO;
@@ -15,7 +14,6 @@ use App\Exception\NoMoneyExceptions;
 use App\Repository\CourseRepository;
 use JMS\Serializer\SerializerBuilder;
 use Doctrine\Persistence\ObjectManager;
-use JMS\Serializer\SerializerInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Nelmio\ApiDocBundle\Annotation\Security;
@@ -311,8 +309,14 @@ class CourseController extends AbstractController
     #[Security(name: 'Bearer')]
     #[Route('/{code}/pay', name: 'api_pay_for_courses', methods: ['POST'])]
     #[IsGranted('ROLE_USER')]
-    public function payForCourses(string $code, PaymentService $paymentService, CourseRepository $courseRepository)
+    public function payForCourses(string $code, PaymentService $paymentService, TokenStorageInterface $tokenStorageInterface, CourseRepository $courseRepository)
     {
+        if (!$tokenStorageInterface->getToken() || !in_array('ROLE_USER', $this->getUser()->getRoles(), true)) {
+            return new JsonResponse(['errors' => 'Нет токена'], Response::HTTP_UNAUTHORIZED);
+        }
+        if (!$this->getUser()) {
+            return new JsonResponse(['errors' => 'Пользователь не авторизован'], Response::HTTP_UNAUTHORIZED);
+        }
         $course = $courseRepository->findOneBy(['code' => htmlspecialchars($code)]);
         if (!$course) {
             return new JsonResponse(['success' => false, 'errors' => "Курс $code не найден"], Response::HTTP_NOT_FOUND);
